@@ -1,4 +1,4 @@
-// Copyright 2024 Cloudflare, Inc.
+// Copyright 2025 Cloudflare, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,7 +17,10 @@ use core::pin::Pin;
 use core::task::{Context, Poll};
 use pingora_cache::lock::WritePermit;
 use pingora_core::protocols::raw_connect::ProxyDigest;
-use pingora_core::protocols::{GetProxyDigest, GetTimingDigest, Ssl, TimingDigest, UniqueID};
+use pingora_core::protocols::{
+    GetProxyDigest, GetSocketDigest, GetTimingDigest, Peek, SocketDigest, Ssl, TimingDigest,
+    UniqueID, UniqueIDType,
+};
 use std::io::Cursor;
 use std::sync::Arc;
 use tokio::io::{AsyncRead, AsyncWrite, Error, ReadBuf};
@@ -66,7 +69,7 @@ impl AsyncWrite for DummyIO {
 }
 
 impl UniqueID for DummyIO {
-    fn id(&self) -> i32 {
+    fn id(&self) -> UniqueIDType {
         0 // placeholder
     }
 }
@@ -84,6 +87,14 @@ impl GetProxyDigest for DummyIO {
         None
     }
 }
+
+impl GetSocketDigest for DummyIO {
+    fn get_socket_digest(&self) -> Option<Arc<SocketDigest>> {
+        None
+    }
+}
+
+impl Peek for DummyIO {}
 
 #[async_trait]
 impl pingora_core::protocols::Shutdown for DummyIO {
